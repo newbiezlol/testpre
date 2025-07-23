@@ -37,20 +37,10 @@ local function checkKey(inputKey)
 		if expectedUsername == actualUsername then
 			return true
 		else
-			Fluent:Notify({
-				Title = "Sai tài khoản",
-				Content = "Key này không dành cho tài khoản " .. actualUsername,
-				SubContent = "Vui lòng kiểm tra lại!",
-				Duration = 5
-			})
+			localPlayer:Kick("🔐 Key này không thuộc về tài khoản " .. actualUsername)
 		end
 	else
-		Fluent:Notify({
-			Title = "Key không hợp lệ",
-			Content = "Key bạn nhập không tồn tại!",
-			SubContent = "Vui lòng thử lại",
-			Duration = 5
-		})
+		localPlayer:Kick("❌ Key không hợp lệ hoặc không tồn tại.")
 	end
 
 	return false
@@ -77,13 +67,12 @@ Tabs.Main:AddButton({
 				Title = "Thành công!",
 				Content = "Key hợp lệ. Chào " .. localPlayer.Name,
 				SubContent = "Script đang chạy...",
-				Duration = 4
+				Duration = 3
 			})
 
-			-- ✅ Đóng GUI sau 2s
 			task.delay(2, function()
 				Window:Destroy()
-				-- GỌI SCRIPT CHÍNH Ở ĐÂY
+				-- 🟢 CHẠY SCRIPT CHÍNH Ở ĐÂY
 				-- loadstring(game:HttpGet("LINK_SCRIPT_CHÍNH"))()
 			end)
 		end
