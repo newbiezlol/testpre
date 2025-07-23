@@ -7,7 +7,7 @@ local localPlayer = Players.LocalPlayer
 local KEY_CHECK_URL = "https://raw.githubusercontent.com/newbiezlol/roblox-keysystem/main/key.json"
 
 -- 🌈 Load Fluent UI
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/LongThanhTz12/Fluent/main/source.lua"))()
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/LongThanhTz12/GUI-LIBARY-SCRIPT/refs/heads/main/guilibaryscript"))()
 local Window = Fluent:CreateWindow({
     Title = "🔐 Key System",
     SubTitle = "Vui lòng nhập key để tiếp tục",
