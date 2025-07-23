@@ -1,93 +1,91 @@
---// 📦 SERVICES
+-- ⚙️ SERVICES
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local localPlayer = Players.LocalPlayer
 
---// 🧠 TẠO HWID
-local function getHWID()
-    return tostring(LocalPlayer.UserId) .. "-" .. tostring(LocalPlayer.Name)
-end
-
---// 🔐 CẤU HÌNH
+-- 🔑 CONFIG
 local KEY_CHECK_URL = "https://raw.githubusercontent.com/newbiezlol/roblox-keysystem/main/key.json"
 
-
---// 🧩 Tạo UI Nhập Key (dùng Fluent UI)
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/LongThanhTz12/GUI-LIBARY-SCRIPT/refs/heads/main/guilibaryscript"))()
-
+-- 🌈 Load Fluent UI
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/LongThanhTz12/Fluent/main/source.lua"))()
 local Window = Fluent:CreateWindow({
-    Title = "🔑 Nhập Key",
-    SubTitle = "Hệ thống kiểm tra key Roblox",
+    Title = "🔐 Key System",
+    SubTitle = "Vui lòng nhập key để tiếp tục",
     TabWidth = 160,
-    Size = UDim2.fromOffset(400, 250),
+    Size = UDim2.fromOffset(450, 300),
     Acrylic = true,
-    Theme = "Dark"
+    Theme = "Dark",
+    Center = true,
+    Footer = "by newbiez",
+    Draggable = true,
 })
 
-local Tab = Window:AddTab({ Title = "Verify", Icon = "🔐" })
+local Tabs = {
+    Main = Window:AddTab({ Title = "Check Key", Icon = "KeyRound" }),
+}
 
-local InputKey = Tab:AddInput("KeyInput", {
-    Title = "Dán Key vào đây",
-    Default = "",
-    Placeholder = "Nhập key bạn đã được cấp...",
-    Numeric = false,
-    ClearTextOnFocus = false
+-- 🧠 Check key với GitHub
+local function checkKey(inputKey)
+	local success, response = pcall(function()
+		return HttpService:JSONDecode(game:HttpGet(KEY_CHECK_URL))
+	end)
+
+	if success and response[inputKey] then
+		local expectedUsername = response[inputKey]
+		local actualUsername = localPlayer.Name
+
+		if expectedUsername == actualUsername then
+			return true
+		else
+			Fluent:Notify({
+				Title = "Sai tài khoản",
+				Content = "Key này không dành cho tài khoản " .. actualUsername,
+				SubContent = "Vui lòng kiểm tra lại!",
+				Duration = 5
+			})
+		end
+	else
+		Fluent:Notify({
+			Title = "Key không hợp lệ",
+			Content = "Key bạn nhập không tồn tại!",
+			SubContent = "Vui lòng thử lại",
+			Duration = 5
+		})
+	end
+
+	return false
+end
+
+-- 📥 UI nhập key
+local userKey = ""
+
+Tabs.Main:AddInput("InputKey", {
+	Title = "🔑 Nhập Key",
+	Default = "",
+	Placeholder = "Nhập key tại đây...",
+	Callback = function(value)
+		userKey = value
+	end,
 })
 
-local Notify = function(text)
-    Fluent:Notify({
-        Title = "Thông báo",
-        Content = text,
-        SubContent = "Hệ thống key",
-        Duration = 5
-    })
-end
+Tabs.Main:AddButton({
+	Title = "✅ Kiểm Tra Key",
+	Description = "Bấm để xác minh",
+	Callback = function()
+		if checkKey(userKey) then
+			Fluent:Notify({
+				Title = "Thành công!",
+				Content = "Key hợp lệ. Chào " .. localPlayer.Name,
+				SubContent = "Script đang chạy...",
+				Duration = 4
+			})
 
-local function validateKey(key)
-    local success, response = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(KEY_CHECK_URL))
-    end)
-
-    if not success then
-        return false, "Lỗi khi kết nối tới GitHub!"
-    end
-
-    local data = response[key]
-    if not data then
-        return false, "❌ Key không tồn tại!"
-    end
-
-    local hwid = getHWID()
-    if data["hwid"] == nil or data["hwid"] == "" then
-        return true, "FIRST_USE", hwid
-    elseif data["hwid"] == hwid then
-        return true, "VALID", hwid
-    else
-        return false, "⚠️ Key đã bị ràng buộc thiết bị khác!"
-    end
-end
-
-Tab:AddButton({
-    Title = "✔️ Kiểm Tra Key",
-    Description = "Nhấn để xác minh key bạn đã nhập",
-    Callback = function()
-        local key = InputKey.Value
-        if key == "" then
-            Notify("❌ Vui lòng nhập key!")
-            return
-        end
-
-        local ok, status, hwid = validateKey(key)
-        if ok and status == "VALID" then
-            Notify("✅ Key hợp lệ! Tiếp tục...")
-            Window:Destroy()
-        elseif ok and status == "FIRST_USE" then
-            Notify("🆗 Key hợp lệ lần đầu. Gán HWID thủ công:\n" .. hwid)
-            Window:Destroy()
-        else
-            Notify("❌ " .. tostring(status))
-            task.wait(2)
-            LocalPlayer:Kick("Key không hợp lệ hoặc bị ràng buộc sai thiết bị!")
-        end
-    end
+			-- ✅ Đóng GUI sau 2s
+			task.delay(2, function()
+				Window:Destroy()
+				-- GỌI SCRIPT CHÍNH Ở ĐÂY
+				-- loadstring(game:HttpGet("LINK_SCRIPT_CHÍNH"))()
+			end)
+		end
+	end,
 })
